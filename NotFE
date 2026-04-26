@@ -59,7 +59,7 @@ local function shouldDestroyPart(part)
     if not name then return false end
     
     -- Точные совпадения
-    local exactMatches = {"KlPart", "KIpart", "KillPart", "Sign", "DamagePart", ”DmgPart”}
+    local exactMatches = {"KlPart", "KIpart", "KillPart", "Sign", "DamagePart", "DmgPart"}
     for _, match in ipairs(exactMatches) do
         if name == match then
             return true
@@ -67,7 +67,7 @@ local function shouldDestroyPart(part)
     end
     
     -- Ключевые слова в любом регистре
-    local keywords = {"Kl", "KI", "Kill", "Sign", "Damage", ”Dmg”}
+    local keywords = {"Kl", "KI", "Kill", "Sign", "Damage", "Dmg"}
     local lowerName = string.lower(name)
     for _, keyword in ipairs(keywords) do
         if string.find(lowerName, string.lower(keyword)) then
