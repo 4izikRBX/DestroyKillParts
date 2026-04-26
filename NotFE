@@ -53,21 +53,31 @@ local function createGlowEffect(part)
     end
 end
 
+-- ТОЧНЫЕ СОВПАДЕНИЯ (полные имена)
+local exactMatches = {
+    "KlPart", "KIpart", "KillPart", "Sign", "DamagePart", "DmgPart",
+    "Kl", "KI", "Kill", "Sign", "Damage", "Dmg"
+}
+
+-- КЛЮЧЕВЫЕ СЛОВА (для поиска внутри имени)
+local keywords = {
+    "Kl", "KI", "Kill", "Sign", "Damage", "Dmg",
+    "KlPart", "KIpart", "KillPart", "DamagePart", "DmgPart"
+}
+
 -- Функция проверки имени
 local function shouldDestroyPart(part)
     local name = part.Name
     if not name then return false end
     
-    -- Точные совпадения
-    local exactMatches = {"KlPart", "KIpart", "KillPart", "Sign", "DamagePart", "DmgPart"}
+    -- Проверка точных совпадений
     for _, match in ipairs(exactMatches) do
         if name == match then
             return true
         end
     end
     
-    -- Ключевые слова в любом регистре
-    local keywords = {"Kl", "KI", "Kill", "Sign", "Damage", "Dmg"}
+    -- Проверка ключевых слов (в любом регистре)
     local lowerName = string.lower(name)
     for _, keyword in ipairs(keywords) do
         if string.find(lowerName, string.lower(keyword)) then
@@ -156,4 +166,5 @@ startCleanup()
 watchForNewObjects()
 healLoop()
 
-print("✅ Deleted Damage Parts")
+print("✅ Damage And Kill Parts Deleted")
+print("🔴 God Mode Enabled - Auto 100 Health")
