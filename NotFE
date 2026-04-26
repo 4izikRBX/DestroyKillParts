@@ -1,0 +1,159 @@
+-- Клиентский скрипт (вставить в StarterPlayerScripts или StarterGui)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- Функция создания эффекта свечения перед удалением
+local function createGlowEffect(part)
+    local attachments = {}
+    
+    -- Highlight (обводка)
+    local highlight = Instance.new("Highlight")
+    highlight.Adornee = part
+    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+    highlight.FillTransparency = 0.4
+    highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+    highlight.OutlineTransparency = 0
+    highlight.Parent = part
+    table.insert(attachments, highlight)
+    
+    -- PointLight
+    local pointLight = Instance.new("PointLight")
+    pointLight.Color = Color3.fromRGB(255, 0, 0)
+    pointLight.Brightness = 5
+    pointLight.Range = 10
+    pointLight.Parent = part
+    table.insert(attachments, pointLight)
+    
+    -- Spotlight
+    local spotLight = Instance.new("SpotLight")
+    spotLight.Color = Color3.fromRGB(255, 0, 0)
+    spotLight.Brightness = 3
+    spotLight.Range = 15
+    spotLight.Angle = 90
+    spotLight.Face = Enum.NormalId.Top
+    spotLight.Parent = part
+    table.insert(attachments, spotLight)
+    
+    -- SurfaceLight (если часть имеет поверхности)
+    local surfaceLight = Instance.new("SurfaceLight")
+    surfaceLight.Color = Color3.fromRGB(255, 0, 0)
+    surfaceLight.Brightness = 4
+    surfaceLight.Range = 12
+    surfaceLight.Parent = part
+    table.insert(attachments, surfaceLight)
+    
+    -- Через 3 секунды удаляем все эффекты
+    task.wait(3)
+    for _, attachment in ipairs(attachments) do
+        if attachment and attachment.Parent then
+            attachment:Destroy()
+        end
+    end
+end
+
+-- Функция проверки имени
+local function shouldDestroyPart(part)
+    local name = part.Name
+    if not name then return false end
+    
+    -- Точные совпадения
+    local exactMatches = {"KlPart", "KIpart", "KillPart", "Sign", "DamagePart", ”DmgPart”}
+    for _, match in ipairs(exactMatches) do
+        if name == match then
+            return true
+        end
+    end
+    
+    -- Ключевые слова в любом регистре
+    local keywords = {"Kl", "KI", "Kill", "Sign", "Damage", ”Dmg”}
+    local lowerName = string.lower(name)
+    for _, keyword in ipairs(keywords) do
+        if string.find(lowerName, string.lower(keyword)) then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Функция уничтожения с эффектами
+local function destroyWithEffect(instance)
+    -- Создаём эффекты (только для BasePart)
+    if instance:IsA("BasePart") then
+        coroutine.wrap(function()
+            createGlowEffect(instance)
+            task.wait(0.2) -- Небольшая задержка перед удалением, чтобы эффекты показались
+            instance:Destroy()
+        end)()
+    else
+        instance:Destroy()
+    end
+end
+
+local function scanAndDestroy(instance)
+    if shouldDestroyPart(instance) then
+        destroyWithEffect(instance)
+        return
+    end
+    
+    local children = instance:GetChildren()
+    for _, child in ipairs(children) do
+        if shouldDestroyPart(child) then
+            destroyWithEffect(child)
+        else
+            scanAndDestroy(child)
+        end
+    end
+end
+
+-- Функция лечения здоровья (постоянно поддерживаем 100)
+local function healLoop()
+    coroutine.wrap(function()
+        while true do
+            task.wait(0.1) -- Проверяем каждые 0.1 секунды
+            if humanoid and humanoid.Parent then
+                if humanoid.Health < 100 then
+                    humanoid.Health = 100
+                end
+            else
+                -- Переподвязка, если персонаж пересоздался
+                local newCharacter = player.Character
+                if newCharacter then
+                    humanoid = newCharacter:WaitForChild("Humanoid", 5)
+                end
+                if not humanoid then
+                    task.wait(1)
+                end
+            end
+        end
+    end)()
+end
+
+-- Запускаем проверку
+local function startCleanup()
+    scanAndDestroy(game)
+end
+
+-- Следим за новыми объектами
+local function watchForNewObjects()
+    game.DescendantAdded:Connect(function(descendant)
+        if shouldDestroyPart(descendant) then
+            destroyWithEffect(descendant)
+        end
+    end)
+end
+
+-- Обработка смены персонажа
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = character:WaitForChild("Humanoid")
+end)
+
+-- Запускаем всё
+startCleanup()
+watchForNewObjects()
+healLoop()
+
+print("✅ Deleted Damage Parts")
