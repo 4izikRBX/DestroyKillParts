@@ -54,13 +54,13 @@ end
 -- ТОЧНЫЕ СОВПАДЕНИЯ (полные имена)
 local exactMatches = {
     "KlPart", "KIpart", "KillPart", "Sign", "DamagePart", "DmgPart",
-    "Kl", "KI", "Kill", "Sign", "Damage", "Dmg"
+    "Kl", "KI", "Kill", "Sign", "Damage", "Dmg", "TelePart"
 }
 
 -- КЛЮЧЕВЫЕ СЛОВА (для поиска внутри имени)
 local keywords = {
     "Kl", "KI", "Kill", "Sign", "Damage", "Dmg",
-    "KlPart", "KIpart", "KillPart", "DamagePart", "DmgPart"
+    "KlPart", "KIpart", "KillPart", "DamagePart", "DmgPart", "Tele"
 }
 
 -- Функция проверки имени
